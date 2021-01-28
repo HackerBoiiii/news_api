@@ -67,32 +67,56 @@ class CategoryTile extends StatelessWidget {
   CategoryTile({this.imageUrl,this.categoryname});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(right: 10),
-      child: Stack(
-        children: [
-          ClipRRect(
-           borderRadius: BorderRadius.circular(7),
-              child: Image.network(imageUrl,width: 120,height: 160, fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: (){
+
+      },
+      child: Container(
+        margin: EdgeInsets.only(right: 10),
+        child: Stack(
+          children: [
+            ClipRRect(
+             borderRadius: BorderRadius.circular(7),
+                child: Image.network(imageUrl,width: 120,height: 160, fit: BoxFit.cover,
+                ),
+
+            ),
+            Container(
+              alignment: Alignment.center,
+              width: 120,
+              height: 160,
+              decoration: BoxDecoration(
+
+                borderRadius: BorderRadius.circular(7)
               ),
 
-          ),
-          Container(
-            alignment: Alignment.center,
-            width: 120,
-            height: 160,
-            decoration: BoxDecoration(
 
-              borderRadius: BorderRadius.circular(7)
-            ),
+              child: Text(categoryname,style: TextStyle(
+                color: Colors.white
+              ),),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
 
+class BlogTile extends StatelessWidget {
+  final String imageUrl,title,desc;
 
-            child: Text(categoryname,style: TextStyle(
-              color: Colors.white
-            ),),
-          )
+  BlogTile(@required this.imageUrl,@required this.title, @required this.desc);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        children: [
+          Image.network(imageUrl),
+          Text(title),
+          Text(desc)
         ],
       ),
     );
   }
 }
+
