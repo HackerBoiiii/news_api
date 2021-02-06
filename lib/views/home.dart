@@ -1,6 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:news_api/helper/data.dart';
+import 'package:news_api/helper/news.dart';
+import 'package:news_api/models/article_model.dart';
 import 'package:news_api/models/category_model.dart';
+import 'package:news_api/views/articleview.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -8,92 +13,184 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<CategoryModel> categories= new List<CategoryModel>();
-
+  List<CategoryModel> categories = new List<CategoryModel>();
+  List<ArticleModel> articles=new List<ArticleModel>();
+  bool _loading=true;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-categories=getCategories();
+    categories = getCategories();
+    getNews();
+  }
+
+  getNews()async{
+    News newsClass =News();
+    await newsClass.getnews();
+    articles=newsClass.news;
+    setState(() {
+      _loading=false;
+    });
+
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        // Add a ListView to the drawer. This ensures the user can scroll
+        // through the options in the drawer if there isn't enough vertical
+        // space to fit everything.
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('FlutterNews'),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            ListTile(
+              title: Text('Bussiness'),
+              trailing: Icon(Icons.add_business_sharp),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: Text('Entertainment'),
+              trailing: Icon(Icons.movie),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: Text('General'),
+              trailing: Icon(Icons.account_balance),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: Text('Health'),
+              trailing: Icon(Icons.healing),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: Text('Sports'),
+              trailing: Icon(Icons.sports),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: Text('Technology'),
+              trailing: Icon(Icons.electric_car_outlined),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
+
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Flutter'),
-            Text('News',style: TextStyle(
-              color: Colors.blue
-            ),)
+            Text(
+              'News',
+              style: TextStyle(color: Colors.blue),
+            )
           ],
         ),
         elevation: 0.0,
         centerTitle: true,
       ),
-      body: Container(
-
-        child: Column(
-
-          children: <Widget>[
-            Container(
-
-              height: 70,
+      body: _loading ? Center(
+        child: Container(
+          child: CircularProgressIndicator(),
+        ),
+      ):Container(
+        margin: EdgeInsets.only(left: 5,right: 5),
+          child: Column(
+        children: <Widget>[
+          Container(
+            margin: EdgeInsets.only(bottom: 10),
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(bottom: 15),
+              itemCount: categories.length,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return CategoryTile(
+                  imageUrl: categories[index].imageUrl,
+                  categoryname: categories[index].categoryName,
+                );
+              },
+            ),
+          ),
+          Flexible(
+            child: Container(
               child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
+
+                itemCount: articles.length,
                   shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return CategoryTile(
-                      imageUrl: categories[index].imageUrl,
-                      categoryname: categories[index].categoryName,
-                    );
+                  itemBuilder:(context, index) {
+                    return BlogTile(articles[index].urlToImage, articles[index].title, articles[index].description,articles[index].url);
                   },
               ),
-            )
-          ],
-        )
-      ),
-
+            ),
+          )
+        ],
+      )),
     );
   }
 }
 
 class CategoryTile extends StatelessWidget {
-  final imageUrl,categoryname;
+  final imageUrl, categoryname;
 
-  CategoryTile({this.imageUrl,this.categoryname});
+  CategoryTile({this.imageUrl, this.categoryname});
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-
-      },
+      onTap: () {},
       child: Container(
         margin: EdgeInsets.only(right: 10),
         child: Stack(
           children: [
             ClipRRect(
-             borderRadius: BorderRadius.circular(7),
-                child: Image.network(imageUrl,width: 120,height: 160, fit: BoxFit.cover,
-                ),
-
+              borderRadius: BorderRadius.circular(7),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                width: 120,
+                height: 160,
+                fit: BoxFit.cover,
+              ),
             ),
+
             Container(
               alignment: Alignment.center,
               width: 120,
               height: 160,
-              decoration: BoxDecoration(
-
-                borderRadius: BorderRadius.circular(7)
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(7)),
+              child: Text(
+                categoryname,
+                style: TextStyle(color: Colors.white),
               ),
-
-
-              child: Text(categoryname,style: TextStyle(
-                color: Colors.white
-              ),),
             )
           ],
         ),
@@ -103,20 +200,31 @@ class CategoryTile extends StatelessWidget {
 }
 
 class BlogTile extends StatelessWidget {
-  final String imageUrl,title,desc;
+  final String imageUrl, title, desc,url;
 
-  BlogTile(@required this.imageUrl,@required this.title, @required this.desc);
+  BlogTile(@required this.imageUrl, @required this.title, @required this.desc, @required this.url);
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          Image.network(imageUrl),
-          Text(title),
-          Text(desc)
-        ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return ArticleView(blogUrl: url,);
+        },));
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 20),
+        child: Column(
+          children: [ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+              child: Image.network(imageUrl)),
+            SizedBox(height: 8),
+            Text(title,style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87, fontSize: 17)),
+            SizedBox(height: 5,),
+            Text(desc,style: TextStyle(color: Colors.black54),
+            )],
+        ),
       ),
     );
   }
 }
-
