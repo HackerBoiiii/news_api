@@ -6,6 +6,7 @@ import 'package:news_api/helper/news.dart';
 import 'package:news_api/models/article_model.dart';
 import 'package:news_api/models/category_model.dart';
 import 'package:news_api/views/articleview.dart';
+import 'package:news_api/views/category_news.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -27,7 +28,7 @@ class _HomeState extends State<Home> {
 
   getNews()async{
     News newsClass =News();
-    await newsClass.getnews();
+    await newsClass.getNews();
     articles=newsClass.news;
     setState(() {
       _loading=false;
@@ -37,6 +38,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       drawer: Drawer(
         // Add a ListView to the drawer. This ensures the user can scroll
         // through the options in the drawer if there isn't enough vertical
@@ -119,42 +121,43 @@ class _HomeState extends State<Home> {
       ),
       body: _loading ? Center(
         child: Container(
+
           child: CircularProgressIndicator(),
         ),
       ):Container(
-        margin: EdgeInsets.only(left: 5,right: 5),
+          margin: EdgeInsets.only(left: 5,right: 5),
           child: Column(
-        children: <Widget>[
-          Container(
-            margin: EdgeInsets.only(bottom: 10),
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.only(bottom: 15),
-              itemCount: categories.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return CategoryTile(
-                  imageUrl: categories[index].imageUrl,
-                  categoryname: categories[index].categoryName,
-                );
-              },
-            ),
-          ),
-          Flexible(
-            child: Container(
-              child: ListView.builder(
-
-                itemCount: articles.length,
+            children: <Widget>[
+              Container(
+                margin: EdgeInsets.only(bottom: 10),
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.only(bottom: 15),
+                  itemCount: categories.length,
                   shrinkWrap: true,
-                  itemBuilder:(context, index) {
-                    return BlogTile(articles[index].urlToImage, articles[index].title, articles[index].description,articles[index].url);
+                  itemBuilder: (context, index) {
+                    return CategoryTile(
+                      imageUrl: categories[index].imageUrl,
+                      categoryname: categories[index].categoryName,
+                    );
                   },
+                ),
               ),
-            ),
-          )
-        ],
-      )),
+              Flexible(
+                child: Container(
+                  child: ListView.builder(
+
+                    itemCount: articles.length,
+                    shrinkWrap: true,
+                    itemBuilder:(context, index) {
+                      return BlogTile(articles[index].urlToImage, articles[index].title, articles[index].description,articles[index].url);
+                    },
+                  ),
+                ),
+              )
+            ],
+          )),
     );
   }
 }
@@ -167,7 +170,11 @@ class CategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryNews(
+          category: categoryname.toString().toLowerCase(),
+        )));
+      },
       child: Container(
         margin: EdgeInsets.only(right: 10),
         child: Stack(
@@ -216,7 +223,7 @@ class BlogTile extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 20),
         child: Column(
           children: [ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8),
               child: Image.network(imageUrl)),
             SizedBox(height: 8),
             Text(title,style: TextStyle(fontWeight: FontWeight.w500,color: Colors.black87, fontSize: 17)),
